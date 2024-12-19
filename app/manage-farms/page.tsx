@@ -61,6 +61,8 @@ export default function ManageFarms() {
             farmName: farm.farmName,
             landArea: farm.landArea,
             landUnit: farm.landUnit,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             cropProductions: farm.cropProductions,
         };
 
