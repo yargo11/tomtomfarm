@@ -9,6 +9,8 @@ export interface FarmsProps {
   farmName: string;
   landArea: number;
   landUnit: string;
+  createdAt: string;
+  updatedAt: string;
   cropProductions: CropProductionProps[];
 }
 
