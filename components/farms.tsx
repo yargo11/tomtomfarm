@@ -57,8 +57,9 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                 return (
                     <div className="flex flex-col bg-slate-800 rounded-md p-2 gap-y-4 my-4" key={farm.id}>
                         <div className='w-full flex flex-row justify-between'>
-                            <div>
+                            <div className="flex flex-col items-start">
                                 <p>Farm name: {farm.farmName}</p>
+                                <p>Farm email: {farm.email}</p>
                             </div>
                             <div>
                                 <p>Farm size: {farm.landArea} {farm.landUnit}</p>

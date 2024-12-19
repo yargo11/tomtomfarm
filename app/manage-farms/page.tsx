@@ -61,6 +61,7 @@ export default function ManageFarms() {
             farmName: farm.farmName,
             landArea: farm.landArea,
             landUnit: farm.landUnit,
+            email: farm.email,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             cropProductions: farm.cropProductions,
@@ -105,6 +106,11 @@ export default function ManageFarms() {
                                     label="LandArea"
                                     type="number"
                                     onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
+                                />
+                                <Input
+                                    label="Farm Email"
+                                    type="type"
+                                    onChange={e => setFarm({ ...farm, email: e.target.value })}
                                 />
                                 <Select
                                     className="w-full"
