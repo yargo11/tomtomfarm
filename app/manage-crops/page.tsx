@@ -12,10 +12,8 @@ import { useCallback, useEffect, useState } from "react";
 export default function ManageCrops() {
 
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
-    const [farmList, setFarmList] = useState<FarmsProps[]>([])
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [newCrop, setNewCrop] = useState<string>('')
-    const [errorMsg, setErrorMsg] = useState<boolean>(false)
 
     const getData = useCallback(() => {
         fetchCropTypes()
@@ -29,7 +27,12 @@ export default function ManageCrops() {
 
     function AddCrop(crop: string) {
 
+        const newCropId = cropsList.length === 0
+            ? '1'
+            : Math.max(...cropsList.map(crop => Number(crop.id))) + 1
+
         const newCrop = {
+            id: newCropId.toString(),
             name: crop
         }
 
@@ -66,23 +69,23 @@ export default function ManageCrops() {
 
     async function deleteCrop(id: string) {
         const cropExists = await checkFarmsBeforeDeleteCrop(id)
-        if (cropExists) {
-            fetch(`http://localhost:3000/crop-types/${id}`, {
-                method: 'DELETE',
+        // if (cropExists) {
+        fetch(`http://localhost:3000/crop-types/${id}`, {
+            method: 'DELETE',
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Failed to delete crops with ID ${id}. Status: ${response.status}`);
+                }
+                console.log(`Crop with ID ${id} deleted successfully`);
             })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to delete crops with ID ${id}. Status: ${response.status}`);
-                    }
-                    console.log(`Crop with ID ${id} deleted successfully`);
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                })
-                .finally(() => { getData() });
-        } else {
-            console.log('This crops is inserted in some farms, delete from farms first!')
-        }
+            .catch((error) => {
+                console.error('Error:', error);
+            })
+            .finally(() => { getData() });
+        // } else {
+        //     console.log('This crops is inserted in some farms, delete from farms first!')
+        // }
     }
 
     return (

@@ -32,6 +32,8 @@ export default function Farms() {
         theCrops[item.id] = item.name
     }
 
+    console.log('theCrops', theCrops)
+
     function deleteFarm(id: string) {
         fetch(`http://localhost:3000/farms/${id}`, {
             method: 'DELETE',

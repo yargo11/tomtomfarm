@@ -19,16 +19,12 @@ const landUnitType = [
 
 export default function ManageCrops() {
 
-    const [farmList, setFarmList] = useState<FarmsProps[]>([])
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps)
     const [landUnit, setLandUnit] = useState<string>("")
 
-    const [cropsProduction, setCropsProduction] = useState<CropProductionProps[]>([])
-
     const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
-    const selectedCropsValue = useMemo(() => Array.from(selectedCrops).join(", "), [selectedCrops]);
 
     const getData = useCallback(() => {
 
@@ -45,10 +41,10 @@ export default function ManageCrops() {
     useEffect(() => {
 
         const newCropProductions = Array.from(selectedCrops).map((key, index) => ({
-            id: Number.parseInt(key, 10), // O índice do item no array, incrementado para começar em 1.
-            cropTypeId: Number.parseInt(key, 10), // Converta o valor string para um número.
-            isIrrigated: false, // Valor inicial padrão.
-            isInsured: false, // Valor inicial padrão.
+            id: Number.parseInt(key, 10),
+            cropTypeId: Number.parseInt(key, 10),
+            isIrrigated: false,
+            isInsured: false
         }));
 
         setFarm((prevFarm) => ({ ...prevFarm, cropProductions: newCropProductions }))
