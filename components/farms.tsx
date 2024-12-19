@@ -6,6 +6,7 @@ import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
 import { Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem } from "@nextui-org/react";
 import { useCallback, useEffect, useState } from "react";
+import formatarHora from "@/utils";
 
 interface FarmsPageProps {
     farms: FarmsProps[],
@@ -48,14 +49,17 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
         setResultsPerPage(e.target.value);
     };
 
+    const sortedFarms = farms.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
     return (
         <>
-            {farms.slice(startIndex, endIndex).map((farm) => {
+            {sortedFarms.slice(startIndex, endIndex).map((farm) => {
                 return (
                     <div className="flex flex-col bg-slate-800 rounded-md p-2 gap-y-4 my-4" key={farm.id}>
                         <div className='w-full flex flex-row justify-between'>
-                            <div>
+                            <div className="flex flex-col items-start">
                                 <p>Farm name: {farm.farmName}</p>
+                                <p>Farm email: {farm.email}</p>
                             </div>
                             <div>
                                 <p>Farm size: {farm.landArea} {farm.landUnit}</p>
@@ -76,6 +80,10 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                                     </div>
                                 )
                             })}
+                        </div>
+                        <div className="w-full flex flex-row justify-between items-center">
+                            <p>Created at: {formatarHora(farm.createdAt)} </p>
+                            <p>Last update: {formatarHora(farm.updatedAt)} </p>
                         </div>
                         <div className="w-full flex flex-row justify-between items-center">
                             <p className="text-sm">Identifier: {farm.id}</p>
