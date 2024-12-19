@@ -1,15 +1,16 @@
 'use client';
 
 import Farms from "@/components/farms";
+import { addFarm, deleteFarm } from "@/functions/FarmFunctions";
 import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarms } from "@/services/farmsService";
-import type { CropProductionProps, CropsProps, FarmsProps } from "@/types";
+import { fetchFarmsFromAPI } from "@/services/farmsService";
+import type { CropsProps, FarmsProps } from "@/types";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 const landUnitType = [
@@ -17,74 +18,64 @@ const landUnitType = [
     { key: "acre", label: "Acre" },
 ];
 
-export default function ManageCrops() {
+export default function ManageFarms() {
 
+    const [farms, setFarms] = useState<FarmsProps[]>([])
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps)
     const [landUnit, setLandUnit] = useState<string>("")
 
     const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
 
-    const getData = useCallback(() => {
+    useEffect(() => {
+        fetchFarmsFromAPI()
+            .then(data => setFarms(data))
+            .catch(error => console.log(error));
 
         fetchCropTypes()
             .then(data => setCropsList(data))
-            .catch(error => console.log(error));
+            .catch(error => console.log(error));;
     }, []);
 
+    //update cropsProduction objet when clicking a crop from list
     useEffect(() => {
-        getData();
-    }, [getData]);
-
-
-    useEffect(() => {
-
         const newCropProductions = Array.from(selectedCrops).map((key, index) => ({
             id: Number.parseInt(key, 10),
             cropTypeId: Number.parseInt(key, 10),
             isIrrigated: false,
             isInsured: false
         }));
-
         setFarm((prevFarm) => ({ ...prevFarm, cropProductions: newCropProductions }))
-
     }, [selectedCrops])
-
-    const AddFarm = () => {
-
-        const newFarm = {
-            "id": farm.id,
-            "farmName": farm.farmName,
-            "landArea": farm.landArea,
-            "landUnit": farm.landUnit,
-            "cropProductions": farm.cropProductions
-        }
-
-        fetch('http://localhost:3000/farms', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'applciation/json',
-            },
-            body: JSON.stringify(newFarm)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(() => { getData() })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => getData());
-    }
 
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setLandUnit(e.target.value);
         setFarm({ ...farm, landUnit: e.target.value })
     };
+
+    //ADD A NEW FARM
+    function handleAddNewFarm() {
+        const newFarm = {
+            id: farm.id,
+            farmName: farm.farmName,
+            landArea: farm.landArea,
+            landUnit: farm.landUnit,
+            cropProductions: farm.cropProductions,
+        };
+
+        addFarm(newFarm)
+            .then((updatedFarms) => { setFarms(updatedFarms) })
+            .catch((error) => console.error('Error: ', error))
+
+        onClose()
+    }
+
+    function handleDeleteFarm(id: string) {
+        deleteFarm(id)
+            .then((updatedFarms) => { setFarms(updatedFarms) })
+            .catch((error) => console.error('Error: ', error))
+    }
 
     return (
         <div className='min-h-screen p-2 flex flex-col items-center gap-y-4'>
@@ -94,7 +85,7 @@ export default function ManageCrops() {
                     <Button onPress={onOpen}>Add new Farm</Button>
                     <Link href='/'>Back</Link>
                 </div>
-                <Farms />
+                <Farms farms={farms} handleDeleteFarm={handleDeleteFarm} />
             </div>
 
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -149,7 +140,7 @@ export default function ManageCrops() {
                             </ModalBody>
                             <ModalFooter>
                                 <Button>Cancel</Button>
-                                <Button onClick={() => AddFarm()}>Confirm</Button>
+                                <Button onClick={() => handleAddNewFarm()}>Confirm</Button>
                             </ModalFooter>
                         </>
                     )}

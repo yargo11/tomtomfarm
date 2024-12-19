@@ -1,23 +1,35 @@
 'use client'
 
 import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarms } from "@/services/farmsService";
 import type { CropsProps, FarmsProps } from "@/types";
+import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/react";
+import { Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem } from "@nextui-org/react";
 import { useCallback, useEffect, useState } from "react";
 
+interface FarmsPageProps {
+    farms: FarmsProps[],
+    handleDeleteFarm: (id: string) => void
+}
 
-export default function Farms() {
+const pageSize = [
+    { key: "1", label: "1" },
+    { key: "2", label: "2" },
+    { key: "3", label: "3" },
+    { key: "4", label: "4" },
+    { key: "5", label: "5" }
+];
 
-    const [farms, setFarms] = useState<FarmsProps[]>([])
+export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
+
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
+    const [resultsPerPage, setResultsPerPage] = useState<string>('5')
+    const [currentPage, setCurrentPage] = useState<number>(1)
+
+    const startIndex = (currentPage - 1) * Number(resultsPerPage)
+    const endIndex = startIndex + Number(resultsPerPage)
 
     const getData = useCallback(() => {
-        fetchFarms()
-            .then(data => setFarms(data))
-            .catch(error => console.log(error));
-
         fetchCropTypes()
             .then(data => setCropsList(data))
             .catch(error => console.log(error));
@@ -32,27 +44,13 @@ export default function Farms() {
         theCrops[item.id] = item.name
     }
 
-    console.log('theCrops', theCrops)
-
-    function deleteFarm(id: string) {
-        fetch(`http://localhost:3000/farms/${id}`, {
-            method: 'DELETE',
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`Failed to delete resource with ID ${id}. Status: ${response.status}`);
-                }
-                console.log(`Resource with ID ${id} deleted successfully`);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            })
-            .finally(() => { getData() });
-    }
+    const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        setResultsPerPage(e.target.value);
+    };
 
     return (
         <>
-            {farms.map(farm => {
+            {farms.slice(startIndex, endIndex).map((farm) => {
                 return (
                     <div className="flex flex-col bg-slate-800 rounded-md p-2 gap-y-4 my-4" key={farm.id}>
                         <div className='w-full flex flex-row justify-between'>
@@ -92,7 +90,7 @@ export default function Farms() {
                                             <div className="text-small font-bold text-center">Confirm delete?</div>
                                             <div className="flex flex-row gap-x-4">
                                                 <Button>Cancel</Button>
-                                                <Button onClick={() => deleteFarm(farm.id.toString())}>Confirm</Button>
+                                                <Button onClick={() => handleDeleteFarm(farm.id.toString())}>Confirm</Button>
                                             </div>
                                         </div>
                                     </PopoverContent>
@@ -102,6 +100,25 @@ export default function Farms() {
                     </div>
                 );
             })}
+            <div className='w-full flex flex-row justify-center items-center'>
+                <Pagination
+                    initialPage={currentPage}
+                    total={Math.ceil(farms.length / Number(resultsPerPage))}
+                    className="flex-1"
+                    onChange={setCurrentPage}
+                />
+                <Select
+                    className="flex flex-1"
+                    selectedKeys={resultsPerPage}
+                    onChange={handleSelectionChange}
+                    label="Results per page: "
+                    labelPlacement="outside-left"
+                >
+                    {pageSize.map((pages) => (
+                        <SelectItem key={pages.key}>{pages.label}</SelectItem>
+                    ))}
+                </Select>
+            </div>
         </>
     );
 }
