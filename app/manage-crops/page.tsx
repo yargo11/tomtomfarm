@@ -1,38 +1,29 @@
 'use client';
 
-import { addCropsToAPI, deleteCropFromAPI, fetchCropTypes } from "@/services/cropsService";
-import { fetchFarmsFromAPI } from "@/services/farmsService";
+import { FarmContext } from "@/context/farmContext";
+import { addCropsToAPI, deleteCropFromAPI } from "@/services/cropsService";
 import type { CropsProps, FarmsProps } from "@/types";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 
 export default function ManageCrops() {
 
-    const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [newCrop, setNewCrop] = useState<string>('')
 
-    const getData = useCallback(() => {
-        fetchCropTypes()
-            .then(data => setCropsList(data))
-            .catch(error => console.log(error));
-    }, []);
-
-    useEffect(() => {
-        getData();
-    }, [getData]);
+    const farmContext = useContext(FarmContext)
 
     function AddCrop(crop: string) {
 
-        const newCropId = cropsList.length === 0
+        const newCropId = farmContext?.cropsList.length === 0
             ? '1'
-            : Math.max(...cropsList.map(crop => Number(crop.id))) + 1
+            : farmContext?.cropsList?.length ? (Math.max(...farmContext.cropsList.map(crop => Number(crop.id))) + 1) : 0
 
         addCropsToAPI(newCropId.toString(), crop)
-            .then((updatedCrops: CropsProps[]) => { setCropsList(updatedCrops) })
+            .then((updatedCrops: CropsProps[]) => { farmContext?.setCropsList(updatedCrops) })
             .catch((error: Error) => console.error('Error: ', error))
             .finally(() => { onClose() })
     }
@@ -40,8 +31,7 @@ export default function ManageCrops() {
     async function checkFarmsBeforeDeleteCrop(id: string) {
         let cropExists = false
         try {
-            const farms = await fetchFarmsFromAPI()
-            farms.map((farm: FarmsProps) =>
+            farmContext?.farms.map((farm: FarmsProps) =>
                 farm.cropProductions.map(crops => {
                     if (
                         crops.id.toString() === id
@@ -58,7 +48,7 @@ export default function ManageCrops() {
         const cropExists = await checkFarmsBeforeDeleteCrop(id)
         if (!cropExists) {
             deleteCropFromAPI(id)
-                .then((updatedCrops: CropsProps[]) => { setCropsList(updatedCrops) })
+                .then((updatedCrops: CropsProps[]) => { farmContext?.setCropsList(updatedCrops) })
                 .catch((error: Error) => console.error("Error: ", error))
         } else {
             console.log('This crops is inserted in some farms, delete from farms first!')
@@ -74,7 +64,7 @@ export default function ManageCrops() {
                     <Link href='/'>Back</Link>
                 </div>
                 <ul className="max-w-md bg-slate-800 p-4 rounded-md">
-                    {cropsList.map(crop => {
+                    {farmContext?.cropsList.map(crop => {
                         return (
                             <li key={crop.id} className='flex flex-row items-center justify-between p-4 border-b-1'>
                                 {crop.id} - {crop.name}

@@ -1,15 +1,15 @@
 'use client';
 
 import Farms from "@/components/farms";
-import { fetchCropTypes } from "@/services/cropsService";
-import { addFarmToAPI, deleteFarmFromAPI, fetchFarmsFromAPI } from "@/services/farmsService";
-import type { CropsProps, FarmsProps } from "@/types";
+import { FarmContext } from "@/context/farmContext";
+import { addFarmToAPI, deleteFarmFromAPI } from "@/services/farmsService";
+import type { FarmsProps } from "@/types";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 const landUnitType = [
@@ -19,24 +19,14 @@ const landUnitType = [
 
 export default function ManageFarms() {
 
-    const [farms, setFarms] = useState<FarmsProps[]>([])
-    const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-    const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps)
+    const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps) //new farm
     const [landUnit, setLandUnit] = useState<string>("")
     const [searchFilter, setSearchFilter] = useState<string>('')
     const [filteredFarms, setFilteredFarms] = useState<FarmsProps[]>([])
     const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
 
-    useEffect(() => {
-        fetchFarmsFromAPI()
-            .then(data => setFarms(data))
-            .catch(error => console.log(error));
-
-        fetchCropTypes()
-            .then(data => setCropsList(data))
-            .catch(error => console.log(error));;
-    }, []);
+    const farmContext = useContext(FarmContext)
 
     //update cropsProduction objet when clicking a crop from list
     useEffect(() => {
@@ -51,12 +41,16 @@ export default function ManageFarms() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            const filtered = farms.filter((farm) => farm.farmName.toLowerCase().includes(searchFilter.toLowerCase()))
-            setFilteredFarms(filtered)
+            if (farmContext?.farms) {
+                const filtered = farmContext.farms.filter((farm) =>
+                    farm.farmName.toLowerCase().includes(searchFilter.toLowerCase())
+                )
+                setFilteredFarms(filtered)
+            }
         }, 300)
 
         return () => clearTimeout(timer)
-    }, [searchFilter, farms])
+    }, [searchFilter, farmContext])
 
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setLandUnit(e.target.value);
@@ -76,7 +70,7 @@ export default function ManageFarms() {
         };
 
         addFarmToAPI(newFarm)
-            .then((updatedFarms) => { setFarms(updatedFarms) })
+            .then((updatedFarms) => { farmContext?.setFarms(updatedFarms) })
             .catch((error) => console.error('Error: ', error))
 
         onClose()
@@ -84,7 +78,7 @@ export default function ManageFarms() {
 
     function handleDeleteFarm(id: string) {
         deleteFarmFromAPI(id)
-            .then((updatedFarms: FarmsProps[]) => { setFarms(updatedFarms) })
+            .then((updatedFarms: FarmsProps[]) => { farmContext?.setFarms(updatedFarms) })
             .catch((error: Error) => console.error('Error: ', error))
     }
 
@@ -113,14 +107,14 @@ export default function ManageFarms() {
                                     onChange={e => setFarm({ ...farm, farmName: e.target.value })}
                                 />
                                 <Input
-                                    label="LandArea"
-                                    type="number"
-                                    onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
-                                />
-                                <Input
                                     label="Farm Email"
                                     type="type"
                                     onChange={e => setFarm({ ...farm, email: e.target.value })}
+                                />
+                                <Input
+                                    label="LandArea"
+                                    type="number"
+                                    onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
                                 />
                                 <Select
                                     className="w-full"
@@ -148,11 +142,11 @@ export default function ManageFarms() {
                                         }
                                     }}
                                 >
-                                    {cropsList.map(crops => {
+                                    {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
                                         return (
                                             <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
                                         )
-                                    })}
+                                    })) : <ListboxItem>No Crops Available</ListboxItem>}
                                 </Listbox>
 
                             </ModalBody>
