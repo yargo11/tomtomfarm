@@ -1,8 +1,8 @@
 export async function fetchCropTypes() {
-  const baseUrl = "http://localhost:3000/crop-types";
+  const CROP_URL = "http://localhost:3000/crop-types";
 
   try {
-    const response = await fetch(baseUrl);
+    const response = await fetch(CROP_URL);
     if (!response.ok) {
       throw new Error(`Error: status ${response.status}`);
     }

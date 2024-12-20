@@ -25,7 +25,8 @@ export default function ManageFarms() {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps)
     const [landUnit, setLandUnit] = useState<string>("")
-
+    const [searchFilter, setSearchFilter] = useState<string>('')
+    const [filteredFarms, setFilteredFarms] = useState<FarmsProps[]>([])
     const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
 
     useEffect(() => {
@@ -49,12 +50,20 @@ export default function ManageFarms() {
         setFarm((prevFarm) => ({ ...prevFarm, cropProductions: newCropProductions }))
     }, [selectedCrops])
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const filtered = farms.filter((farm) => farm.farmName.toLowerCase().includes(searchFilter.toLowerCase()))
+            setFilteredFarms(filtered)
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [searchFilter, farms])
+
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setLandUnit(e.target.value);
         setFarm({ ...farm, landUnit: e.target.value })
     };
 
-    //ADD A NEW FARM
     function handleAddNewFarm() {
         const newFarm = {
             id: farm.id,
@@ -88,7 +97,9 @@ export default function ManageFarms() {
                     <Button onPress={onOpen}>Add new Farm</Button>
                     <Link href='/'>Back</Link>
                 </div>
-                <Farms farms={farms} handleDeleteFarm={handleDeleteFarm} />
+                <Input value={searchFilter} onValueChange={setSearchFilter} />
+
+                <Farms farms={filteredFarms} handleDeleteFarm={handleDeleteFarm} />
             </div>
 
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
