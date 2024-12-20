@@ -1,9 +1,8 @@
 'use client';
 
 import Farms from "@/components/farms";
-import { addFarm, deleteFarm } from "@/functions/FarmFunctions";
 import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarmsFromAPI } from "@/services/farmsService";
+import { addFarmToAPI, deleteFarmFromAPI, fetchFarmsFromAPI } from "@/services/farmsService";
 import type { CropsProps, FarmsProps } from "@/types";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
@@ -76,7 +75,7 @@ export default function ManageFarms() {
             cropProductions: farm.cropProductions,
         };
 
-        addFarm(newFarm)
+        addFarmToAPI(newFarm)
             .then((updatedFarms) => { setFarms(updatedFarms) })
             .catch((error) => console.error('Error: ', error))
 
@@ -84,9 +83,9 @@ export default function ManageFarms() {
     }
 
     function handleDeleteFarm(id: string) {
-        deleteFarm(id)
-            .then((updatedFarms) => { setFarms(updatedFarms) })
-            .catch((error) => console.error('Error: ', error))
+        deleteFarmFromAPI(id)
+            .then((updatedFarms: FarmsProps[]) => { setFarms(updatedFarms) })
+            .catch((error: Error) => console.error('Error: ', error))
     }
 
     return (

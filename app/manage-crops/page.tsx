@@ -1,7 +1,7 @@
 'use client';
 
-import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarms } from "@/services/farmsService";
+import { addCropsToAPI, deleteCropFromAPI, fetchCropTypes } from "@/services/cropsService";
+import { fetchFarmsFromAPI } from "@/services/farmsService";
 import type { CropsProps, FarmsProps } from "@/types";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
@@ -31,34 +31,22 @@ export default function ManageCrops() {
             ? '1'
             : Math.max(...cropsList.map(crop => Number(crop.id))) + 1
 
-        const newCrop = {
-            id: newCropId.toString(),
-            name: crop
-        }
-
-        fetch('http://localhost:3000/crop-types', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'applciation/json',
-            },
-            body: JSON.stringify(newCrop)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(() => { getData() })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        addCropsToAPI(newCropId.toString(), crop)
+            .then((updatedCrops: CropsProps[]) => { setCropsList(updatedCrops) })
+            .catch((error: Error) => console.error('Error: ', error))
     }
 
+
     async function checkFarmsBeforeDeleteCrop(id: string) {
+        let cropExists = false
         try {
-            const farms = await fetchFarms();
-            const cropExists = farms.some((item: FarmsProps) => item.id.toString() === id);
+            const farms = await fetchFarmsFromAPI()
+            farms.map((farm: FarmsProps) =>
+                farm.cropProductions.map(crops => {
+                    if (
+                        crops.id.toString() === id
+                    ) { cropExists = true }
+                }));
             return cropExists;
         } catch (error) {
             console.error("Error fetching farms:", error);
@@ -67,25 +55,16 @@ export default function ManageCrops() {
     }
 
 
+
     async function deleteCrop(id: string) {
         const cropExists = await checkFarmsBeforeDeleteCrop(id)
-        // if (cropExists) {
-        fetch(`http://localhost:3000/crop-types/${id}`, {
-            method: 'DELETE',
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`Failed to delete crops with ID ${id}. Status: ${response.status}`);
-                }
-                console.log(`Crop with ID ${id} deleted successfully`);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            })
-            .finally(() => { getData() });
-        // } else {
-        //     console.log('This crops is inserted in some farms, delete from farms first!')
-        // }
+        if (!cropExists) {
+            deleteCropFromAPI(id)
+                .then((updatedCrops: CropsProps[]) => { setCropsList(updatedCrops) })
+                .catch((error: Error) => console.error("Error: ", error))
+        } else {
+            console.log('This crops is inserted in some farms, delete from farms first!')
+        }
     }
 
     return (
@@ -107,8 +86,7 @@ export default function ManageCrops() {
                                     <PopoverContent>
                                         <div className="px-1 py-2 flex flex-col gap-y-4">
                                             <div className="text-small font-bold text-center">Confirm delete?</div>
-                                            <div className="flex flex-row gap-x-4">
-                                                <Button>Cancel</Button>
+                                            <div className="flex flex-row gap-x-4 justify-center">
                                                 <Button onClick={() => deleteCrop(crop.id.toString())}>Confirm</Button>
                                             </div>
                                         </div>
