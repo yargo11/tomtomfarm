@@ -7,6 +7,7 @@ import { Button } from "@nextui-org/button";
 import { Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem } from "@nextui-org/react";
 import { useCallback, useEffect, useState } from "react";
 import formatarHora from "@/utils";
+import { Input } from "@nextui-org/input";
 
 interface FarmsPageProps {
     farms: FarmsProps[],
