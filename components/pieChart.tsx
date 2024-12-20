@@ -1,29 +1,19 @@
 'use client'
 
-import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarmsFromAPI } from "@/services/farmsService";
-import type { CropsProps, FarmsProps } from "@/types";
+import { FarmContext } from "@/context/farmContext";
+import type { FarmsProps } from "@/types";
 import { ResponsivePie } from "@nivo/pie";
-import { useEffect, useState } from "react";
+import { useContext } from "react";
 
 export default function PieCharts() {
 
-    const [farms, setFarms] = useState<FarmsProps[]>([])
-    const [cropsList, setCropsList] = useState<CropsProps[]>([])
-
-    useEffect(() => {
-        fetchFarmsFromAPI()
-            .then(data => setFarms(data))
-            .catch(error => console.log(error));
-
-        fetchCropTypes()
-            .then(data => setCropsList(data))
-            .catch(error => console.log(error));;
-    }, []);
+    const farmContext = useContext(FarmContext)
 
     const theCrops: Record<string, string> = {}
-    for (const item of cropsList) {
-        theCrops[item.id] = item.name
+    if (farmContext?.cropsList) {
+        for (const item of farmContext.cropsList) {
+            theCrops[item.id] = item.name
+        }
     }
 
     function groupByCropTypes(farms: FarmsProps[]): Record<number, number> {
@@ -42,7 +32,7 @@ export default function PieCharts() {
         return cropsCount
     }
 
-    const data = Object.entries(groupByCropTypes(farms)).map(([id, value]) => ({
+    const data = Object.entries(groupByCropTypes(farmContext?.farms ? farmContext.farms : [])).map(([id, value]) => ({
         id,
         label: `${theCrops[id]}`,
         value

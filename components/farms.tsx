@@ -1,15 +1,16 @@
 'use client'
 
-import { fetchCropTypes } from "@/services/cropsService";
+import { fetchCropTypesFromAPI } from "@/services/cropsService";
 import type { CropsProps, FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, useDisclosure } from "@nextui-org/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import formatarHora from "@/utils";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import { updateFarmToAPI } from "@/services/farmsService";
+import { FarmContext } from "@/context/farmContext";
 
 interface FarmsPageProps {
     farms: FarmsProps[],
@@ -31,7 +32,6 @@ const landUnitType = [
 
 export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
-    const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const [resultsPerPage, setResultsPerPage] = useState<string>('5')
     const [currentPage, setCurrentPage] = useState<number>(1)
     const [landUnit, setLandUnit] = useState<string>("")
@@ -42,19 +42,13 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
     const startIndex = (currentPage - 1) * Number(resultsPerPage)
     const endIndex = startIndex + Number(resultsPerPage)
 
-    const getData = useCallback(() => {
-        fetchCropTypes()
-            .then(data => setCropsList(data))
-            .catch(error => console.log(error));
-    }, []);
-
-    useEffect(() => {
-        getData();
-    }, [getData]);
+    const farmContext = useContext(FarmContext)
 
     const theCrops: Record<string, string> = {}
-    for (const item of cropsList) {
-        theCrops[item.id] = item.name
+    if (farmContext?.cropsList) {
+        for (const item of farmContext.cropsList) {
+            theCrops[item.id] = item.name
+        }
     }
 
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -203,11 +197,11 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                                         }
                                     }}
                                 >
-                                    {cropsList.map(crops => {
+                                    {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
                                         return (
                                             <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
                                         )
-                                    })}
+                                    })) : <ListboxItem>No Crops Available</ListboxItem>}
                                 </Listbox>
 
                             </ModalBody>

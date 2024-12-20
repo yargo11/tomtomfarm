@@ -1,6 +1,6 @@
 const CROP_URL = "http://localhost:3000/crop-types";
 
-export async function fetchCropTypes() {
+export async function fetchCropTypesFromAPI() {
   try {
     const response = await fetch(CROP_URL);
     if (!response.ok) {
@@ -34,7 +34,7 @@ export async function addCropsToAPI(id: string, crop: string) {
       throw new Error(`Error: status ${response.status}`);
     }
 
-    return await fetchCropTypes();
+    return await fetchCropTypesFromAPI();
   } catch (error) {
     console.error("Error creating crop:", error);
     throw error;
@@ -51,7 +51,7 @@ export async function deleteCropFromAPI(id: string) {
       throw new Error(`Error: status ${response.status}`);
     }
 
-    return fetchCropTypes();
+    return fetchCropTypesFromAPI();
   } catch (error) {
     console.error("Error deleting crop:", error);
     throw error;
