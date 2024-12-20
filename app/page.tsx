@@ -12,7 +12,6 @@ export default function Home() {
           <Link href='/manage-farms'>Manage Farms</Link>
           <Link href='/manage-crops'>Manage Crops</Link>
         </div>
-        <Farms />
       </div>
     </div>
   );
