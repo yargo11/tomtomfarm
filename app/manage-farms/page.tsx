@@ -91,12 +91,12 @@ export default function ManageFarms() {
     return (
         <div className='min-h-screen p-2 flex flex-col items-center gap-y-4'>
             <h1 className='text-2xl'>Tomtom Crops</h1>
-            <div className='max-w-lg w-full p-1 m-1 rounded-lg bg'>
+            <div className='flex flex-col max-w-lg w-full rounded-lg gap-y-4'>
                 <div className="flex flew-row justify-between items-center">
                     <Button onPress={onOpen}>Add new Farm</Button>
                     <Link href='/'>Back</Link>
                 </div>
-                <Input value={searchFilter} onValueChange={setSearchFilter} />
+                <Input value={searchFilter} onValueChange={setSearchFilter} placeholder="Filter you search" />
 
                 <Farms farms={filteredFarms} handleDeleteFarm={handleDeleteFarm} />
             </div>
