@@ -54,3 +54,23 @@ export async function deleteFarmFromAPI(id: string) {
     throw error;
   }
 }
+
+export async function updateFarmToAPI(farm: FarmsProps) {
+  try {
+    const response = await fetch(`${FARM_URL}/${farm.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "applciation/json",
+      },
+      body: JSON.stringify(farm),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update farm: ${response.status}`);
+    }
+
+    return await fetchFarmsFromAPI();
+  } catch (error) {
+    console.log("Error updating farm: ", error);
+  }
+}

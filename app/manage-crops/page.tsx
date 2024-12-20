@@ -12,7 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 export default function ManageCrops() {
 
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [newCrop, setNewCrop] = useState<string>('')
 
     const getData = useCallback(() => {
@@ -34,8 +34,8 @@ export default function ManageCrops() {
         addCropsToAPI(newCropId.toString(), crop)
             .then((updatedCrops: CropsProps[]) => { setCropsList(updatedCrops) })
             .catch((error: Error) => console.error('Error: ', error))
+            .finally(() => { onClose() })
     }
-
 
     async function checkFarmsBeforeDeleteCrop(id: string) {
         let cropExists = false
@@ -53,8 +53,6 @@ export default function ManageCrops() {
             return false;
         }
     }
-
-
 
     async function deleteCrop(id: string) {
         const cropExists = await checkFarmsBeforeDeleteCrop(id)
@@ -75,10 +73,11 @@ export default function ManageCrops() {
                     <Button onPress={onOpen}>Add new Crop</Button>
                     <Link href='/'>Back</Link>
                 </div>
-                <ul>
+                <ul className="max-w-md bg-slate-800 p-4 rounded-md">
                     {cropsList.map(crop => {
                         return (
-                            <li key={crop.id}>{crop.id} - {crop.name}
+                            <li key={crop.id} className='flex flex-row items-center justify-between p-4 border-b-1'>
+                                {crop.id} - {crop.name}
                                 <Popover placement="top">
                                     <PopoverTrigger>
                                         <Button>Delete</Button>

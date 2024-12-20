@@ -4,10 +4,12 @@ import { fetchCropTypes } from "@/services/cropsService";
 import type { CropsProps, FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
-import { Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, useDisclosure } from "@nextui-org/react";
 import { useCallback, useEffect, useState } from "react";
 import formatarHora from "@/utils";
 import { Input } from "@nextui-org/input";
+import { Listbox, ListboxItem } from "@nextui-org/listbox";
+import { updateFarmToAPI } from "@/services/farmsService";
 
 interface FarmsPageProps {
     farms: FarmsProps[],
@@ -22,11 +24,20 @@ const pageSize = [
     { key: "5", label: "5" }
 ];
 
+const landUnitType = [
+    { key: "hectare", label: "Hectare" },
+    { key: "acre", label: "Acre" },
+];
+
 export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
     const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const [resultsPerPage, setResultsPerPage] = useState<string>('5')
     const [currentPage, setCurrentPage] = useState<number>(1)
+    const [landUnit, setLandUnit] = useState<string>("")
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const [farmToEdit, setFarmToEdit] = useState<FarmsProps>({} as FarmsProps)
+    const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
 
     const startIndex = (currentPage - 1) * Number(resultsPerPage)
     const endIndex = startIndex + Number(resultsPerPage)
@@ -47,8 +58,21 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
     }
 
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        setResultsPerPage(e.target.value);
+        setLandUnit(e.target.value);
+        setFarmToEdit({ ...farmToEdit, landUnit: e.target.value })
     };
+
+    const handleOpenModal = (farm: FarmsProps) => {
+        setFarmToEdit(farm)
+        onOpen()
+    }
+
+    const handleUpdateFarm = () => {
+        updateFarmToAPI(farmToEdit)
+            .then(data => console.log(data))
+            .catch(error => console.log(error))
+            .finally(() => onClose());
+    }
 
     const sortedFarms = farms.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
@@ -89,7 +113,7 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                         <div className="w-full flex flex-row justify-between items-center">
                             <p className="text-sm">Identifier: {farm.id}</p>
                             <div className="flex flex-row gap-x-4">
-                                <Button>Edit</Button>
+                                <Button onPress={() => handleOpenModal(farm)}>Edit</Button>
                                 <Popover placement="top">
                                     <PopoverTrigger>
                                         <Button>Delete</Button>
@@ -97,8 +121,7 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                                     <PopoverContent>
                                         <div className="px-1 py-2 flex flex-col gap-y-4">
                                             <div className="text-small font-bold text-center">Confirm delete?</div>
-                                            <div className="flex flex-row gap-x-4">
-                                                <Button>Cancel</Button>
+                                            <div className="flex flex-row gap-x-4 justify-center">
                                                 <Button onClick={() => handleDeleteFarm(farm.id.toString())}>Confirm</Button>
                                             </div>
                                         </div>
@@ -128,6 +151,74 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                     ))}
                 </Select>
             </div>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Add new crop</ModalHeader>
+                            <ModalBody>
+                                <Input
+                                    label="Farm Name"
+                                    type="text"
+                                    value={farmToEdit.farmName}
+                                    onChange={e => setFarmToEdit({ ...farmToEdit, farmName: e.target.value })}
+                                />
+                                <Input
+                                    label="LandArea"
+                                    type="number"
+                                    value={farmToEdit.landArea.toString()}
+                                    onChange={e => setFarmToEdit({ ...farmToEdit, landArea: Number(e.target.value) })}
+                                />
+                                <Input
+                                    label="Farm Email"
+                                    type="type"
+                                    value={farmToEdit.email}
+                                    onChange={e => setFarmToEdit({ ...farmToEdit, email: e.target.value })}
+                                />
+                                <Select
+                                    className="w-full"
+                                    label="Land Unit"
+                                    placeholder="Select land unit"
+                                    defaultSelectedKeys={[farmToEdit.landUnit.toLocaleLowerCase()]}
+                                    selectedKeys={[landUnit]}
+                                    onChange={handleSelectionChange}
+                                >
+                                    {landUnitType.map((unit) => (
+                                        <SelectItem key={unit.key}>{unit.label}</SelectItem>
+                                    ))}
+                                </Select>
+
+                                <h1 className={'text-lg'}>Select your crops</h1>
+                                <Listbox
+                                    disallowEmptySelection
+                                    aria-label="Multiple selection example"
+                                    selectedKeys={selectedCrops}
+                                    defaultSelectedKeys={farmToEdit.cropProductions.map(crop => crop.cropTypeId.toString())}
+                                    selectionMode="multiple"
+                                    variant="flat"
+                                    //REVER ESSE SELECTION
+                                    onSelectionChange={(keys) => {
+                                        if (keys instanceof Set) {
+                                            setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
+                                        }
+                                    }}
+                                >
+                                    {cropsList.map(crops => {
+                                        return (
+                                            <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
+                                        )
+                                    })}
+                                </Listbox>
+
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button>Cancel</Button>
+                                <Button onClick={() => handleUpdateFarm()}>Confirm</Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </>
     );
 }
