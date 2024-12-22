@@ -1,11 +1,10 @@
 'use client'
 
-import { fetchCropTypesFromAPI } from "@/services/cropsService";
-import type { CropsProps, FarmsProps } from "@/types";
+import type { FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, useDisclosure } from "@nextui-org/react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { Checkbox, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, useDisclosure } from "@nextui-org/react";
+import { useContext, useState } from "react";
 import formatarHora from "@/utils";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
@@ -37,7 +36,6 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
     const [landUnit, setLandUnit] = useState<string>("")
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [farmToEdit, setFarmToEdit] = useState<FarmsProps>({} as FarmsProps)
-    const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
 
     const startIndex = (currentPage - 1) * Number(resultsPerPage)
     const endIndex = startIndex + Number(resultsPerPage)
@@ -51,10 +49,10 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
         }
     }
 
-    // const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    //     setLandUnit(e.target.value);
-    //     setFarmToEdit({ ...farmToEdit, landUnit: e.target.value })
-    // };
+    const handleSelectiUnitOnChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        setLandUnit(e.target.value);
+        setFarmToEdit({ ...farmToEdit, landUnit: e.target.value })
+    };
 
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setResultsPerPage(e.target.value);
@@ -62,14 +60,37 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
     const handleOpenModal = (farm: FarmsProps) => {
         setFarmToEdit(farm)
+        setLandUnit(farm.landUnit.toLowerCase())
         onOpen()
     }
 
     const handleUpdateFarm = () => {
-        updateFarmToAPI(farmToEdit)
+        updateFarmToAPI({ ...farmToEdit, updatedAt: new Date().toISOString() })
             .then(data => console.log(data))
             .catch(error => console.log(error))
             .finally(() => onClose());
+    }
+
+    const handleIrrigatedCropChange = (cropSelectedId: number) => {
+        setFarmToEdit((prevFarm) => ({
+            ...prevFarm,
+            cropProductions: prevFarm.cropProductions.map((crop) =>
+                crop.id === cropSelectedId
+                    ? { ...crop, isIrrigated: !crop.isIrrigated }
+                    : crop
+            )
+        }))
+    }
+
+    const handleInsuredCropChange = (cropSelectedId: number) => {
+        setFarmToEdit((prevFarm) => ({
+            ...prevFarm,
+            cropProductions: prevFarm.cropProductions.map((crop) =>
+                crop.id === cropSelectedId
+                    ? { ...crop, isInsured: !crop.isInsured }
+                    : crop
+            )
+        }))
     }
 
     const sortedFarms = farms.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -156,59 +177,78 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                         <>
                             <ModalHeader className="flex flex-col gap-1">Add new crop</ModalHeader>
                             <ModalBody>
-                                <Input
-                                    label="Farm Name"
-                                    type="text"
-                                    value={farmToEdit.farmName}
-                                    onChange={e => setFarmToEdit({ ...farmToEdit, farmName: e.target.value })}
-                                />
-                                <Input
-                                    label="LandArea"
-                                    type="number"
-                                    value={farmToEdit.landArea.toString()}
-                                    onChange={e => setFarmToEdit({ ...farmToEdit, landArea: Number(e.target.value) })}
-                                />
-                                <Input
-                                    label="Farm Email"
-                                    type="type"
-                                    value={farmToEdit.email}
-                                    onChange={e => setFarmToEdit({ ...farmToEdit, email: e.target.value })}
-                                />
-                                <Select
-                                    className="w-full"
-                                    label="Land Unit"
-                                    placeholder="Select land unit"
-                                    defaultSelectedKeys={[farmToEdit.landUnit.toLocaleLowerCase()]}
-                                    selectedKeys={[landUnit]}
-                                    onChange={handleSelectionChange}
-                                >
-                                    {landUnitType.map((unit) => (
-                                        <SelectItem key={unit.key}>{unit.label}</SelectItem>
-                                    ))}
-                                </Select>
-
-                                <h1 className={'text-lg'}>Select your crops</h1>
-                                <Listbox
-                                    disallowEmptySelection
-                                    aria-label="Multiple selection example"
-                                    selectedKeys={selectedCrops}
-                                    defaultSelectedKeys={farmToEdit.cropProductions.map(crop => crop.cropTypeId.toString())}
-                                    selectionMode="multiple"
-                                    variant="flat"
-                                    //REVER ESSE SELECTION
-                                    onSelectionChange={(keys) => {
-                                        if (keys instanceof Set) {
-                                            setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
-                                        }
-                                    }}
-                                >
-                                    {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
-                                        return (
-                                            <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
-                                        )
-                                    })) : <ListboxItem>No Crops Available</ListboxItem>}
-                                </Listbox>
-
+                                <div className="flex flex-row gap-x-4">
+                                    <div className="flex flex-col gap-y-4">
+                                        <Input
+                                            label="Farm Name"
+                                            type="text"
+                                            value={farmToEdit.farmName}
+                                            onChange={e => setFarmToEdit({ ...farmToEdit, farmName: e.target.value })}
+                                        />
+                                        <Input
+                                            label="LandArea"
+                                            type="number"
+                                            value={farmToEdit.landArea.toString()}
+                                            onChange={e => setFarmToEdit({ ...farmToEdit, landArea: Number(e.target.value) })}
+                                        />
+                                        <Input
+                                            label="Farm Email"
+                                            type="type"
+                                            value={farmToEdit.email}
+                                            onChange={e => setFarmToEdit({ ...farmToEdit, email: e.target.value })}
+                                        />
+                                        <Select
+                                            className="w-full"
+                                            label="Land Unit"
+                                            placeholder="Select land unit"
+                                            defaultSelectedKeys={[farmToEdit.landUnit.toLocaleLowerCase()]}
+                                            selectedKeys={[landUnit]}
+                                            onChange={handleSelectiUnitOnChange}
+                                        >
+                                            {landUnitType.map((unit) => (
+                                                <SelectItem key={unit.key}>{unit.label}</SelectItem>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-y-4">
+                                        <ul>
+                                            {farmToEdit.cropProductions.map(cropsSelected => {
+                                                return (
+                                                    <li key={cropsSelected.cropTypeId} className="flex flex-col mb-2">
+                                                        {theCrops[cropsSelected.cropTypeId]}
+                                                        <Checkbox isSelected={cropsSelected.isIrrigated} onValueChange={() => { handleIrrigatedCropChange(cropsSelected.id) }}>
+                                                            Is irrigated?
+                                                        </Checkbox>
+                                                        <Checkbox isSelected={cropsSelected.isInsured} onValueChange={() => { handleInsuredCropChange(cropsSelected.id) }}>
+                                                            Is insured?
+                                                        </Checkbox>
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                        {/* <h1 className={'text-lg'}>Select your crops</h1>
+                                        <Listbox
+                                            disallowEmptySelection
+                                            aria-label="Multiple selection example"
+                                            selectedKeys={selectedCrops}
+                                            defaultSelectedKeys={farmToEdit.cropProductions.map(crop => crop.cropTypeId.toString())}
+                                            selectionMode="multiple"
+                                            variant="flat"
+                                            //REVER ESSE SELECTION
+                                            onSelectionChange={(keys) => {
+                                                if (keys instanceof Set) {
+                                                    setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
+                                                }
+                                            }}
+                                        >
+                                            {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
+                                                return (
+                                                    <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
+                                                )
+                                            })) : <ListboxItem>No Crops Available</ListboxItem>}
+                                        </Listbox> */}
+                                    </div>
+                                </div>
                             </ModalBody>
                             <ModalFooter>
                                 <Button>Cancel</Button>
