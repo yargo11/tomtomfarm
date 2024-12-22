@@ -72,8 +72,6 @@ export default function ManageFarms() {
         return () => clearTimeout(delay)
     }, [farm.email, touchedEmail, listEmails])
 
-
-
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setLandUnit(e.target.value);
         setFarm({ ...farm, landUnit: e.target.value })
