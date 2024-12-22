@@ -11,10 +11,12 @@ import { useContext, useState } from "react";
 
 export default function ManageCrops() {
 
+    const farmContext = useContext(FarmContext)
+
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [newCrop, setNewCrop] = useState<string>('')
 
-    const farmContext = useContext(FarmContext)
+    const listCrops: string[] | undefined = farmContext?.cropsList.map(crop => crop.name.toLowerCase())
 
     function AddCrop(crop: string) {
 
@@ -86,18 +88,36 @@ export default function ManageCrops() {
                     })}
                 </ul>
             </div>
-
+            listCrops
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">Add new crop</ModalHeader>
                             <ModalBody>
-                                <Input label="Crop" type="text" value={newCrop} onValueChange={setNewCrop} />
+                                <Input
+                                    label="Crop"
+                                    type="text"
+                                    errorMessage="Crop already exists"
+                                    isInvalid={listCrops?.includes(newCrop)}
+                                    value={newCrop}
+                                    onValueChange={setNewCrop}
+                                />
                             </ModalBody>
                             <ModalFooter>
-                                <Button>Cancel</Button>
-                                <Button onClick={() => AddCrop(newCrop)}>Confirm</Button>
+                                <Button
+                                    color="danger"
+                                    onClick={onClose}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    color={(listCrops?.includes(newCrop) || newCrop === '') ? 'default' : 'success'}
+                                    onClick={() => AddCrop(newCrop)}
+                                    disabled={listCrops?.includes(newCrop) || newCrop === ''}
+                                >
+                                    Confirm
+                                </Button>
                             </ModalFooter>
                         </>
                     )}
