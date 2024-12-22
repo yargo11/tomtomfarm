@@ -5,11 +5,11 @@ import type { ChangeEvent } from "react";
 import { Button } from "@nextui-org/button";
 import { Checkbox, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, useDisclosure } from "@nextui-org/react";
 import { useContext, useState } from "react";
-import formatarHora from "@/utils";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import { updateFarmToAPI } from "@/services/farmsService";
 import { FarmContext } from "@/context/farmContext";
+import { formatarHora } from "@/utils";
 
 interface FarmsPageProps {
     farms: FarmsProps[],
