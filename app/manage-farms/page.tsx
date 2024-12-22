@@ -56,7 +56,7 @@ export default function ManageFarms() {
         }, 300)
 
         return () => clearTimeout(timer)
-    }, [searchFilter, farmContext])
+    }, [searchFilter, farmContext?.farms])
 
     // delay on email input
     useEffect(() => {
@@ -105,7 +105,10 @@ export default function ManageFarms() {
 
     function handleDeleteFarm(id: string) {
         deleteFarmFromAPI(id)
-            .then((updatedFarms: FarmsProps[]) => { farmContext?.setFarms(updatedFarms) })
+            .then((updatedFarms: FarmsProps[]) => {
+                farmContext?.setFarms(updatedFarms)
+                alert('Farm deleted!')
+            })
             .catch((error: Error) => console.error('Error: ', error))
     }
 

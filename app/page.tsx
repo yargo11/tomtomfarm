@@ -7,8 +7,8 @@ export default function Home() {
       <h1 className='text-2xl'>Tomtom Farm</h1>
       <div className='max-w-lg w-full p-1 m-1 rounded-lg bg'>
         <div className='flex flex-row justify-between mb-4'>
-          <Link href='/manage-farms'>Manage Farms</Link>
-          <Link href='/manage-crops'>Manage Crops</Link>
+          <Link href='/manage-farms' className="underline-offset-2 hover:underline transition-all duration-200">Manage Farms</Link>
+          <Link href='/manage-crops' className="underline-offset-2 hover:underline transition-all duration-200">Manage Crops</Link>
         </div>
         <PieCharts />
       </div>
