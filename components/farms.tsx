@@ -51,9 +51,13 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
         }
     }
 
+    // const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    //     setLandUnit(e.target.value);
+    //     setFarmToEdit({ ...farmToEdit, landUnit: e.target.value })
+    // };
+
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        setLandUnit(e.target.value);
-        setFarmToEdit({ ...farmToEdit, landUnit: e.target.value })
+        setResultsPerPage(e.target.value);
     };
 
     const handleOpenModal = (farm: FarmsProps) => {
@@ -72,6 +76,25 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
     return (
         <>
+            <div className='w-full flex flex-row justify-center items-center'>
+                <Pagination
+                    initialPage={currentPage}
+                    total={Math.ceil(farms.length / Number(resultsPerPage))}
+                    className="flex-1"
+                    onChange={setCurrentPage}
+                />
+                <Select
+                    className="flex flex-1"
+                    selectedKeys={resultsPerPage}
+                    onChange={handleSelectionChange}
+                    label="Results per page: "
+                    labelPlacement="outside-left"
+                >
+                    {pageSize.map((pages) => (
+                        <SelectItem key={pages.key}>{pages.label}</SelectItem>
+                    ))}
+                </Select>
+            </div>
             {sortedFarms.slice(startIndex, endIndex).map((farm) => {
                 return (
                     <div className="flex flex-col bg-slate-800 rounded-md p-2 gap-y-4 my-4" key={farm.id}>
@@ -126,25 +149,7 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                     </div>
                 );
             })}
-            <div className='w-full flex flex-row justify-center items-center'>
-                <Pagination
-                    initialPage={currentPage}
-                    total={Math.ceil(farms.length / Number(resultsPerPage))}
-                    className="flex-1"
-                    onChange={setCurrentPage}
-                />
-                <Select
-                    className="flex flex-1"
-                    selectedKeys={resultsPerPage}
-                    onChange={handleSelectionChange}
-                    label="Results per page: "
-                    labelPlacement="outside-left"
-                >
-                    {pageSize.map((pages) => (
-                        <SelectItem key={pages.key}>{pages.label}</SelectItem>
-                    ))}
-                </Select>
-            </div>
+
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (
