@@ -151,16 +151,16 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                         <div className="w-full flex flex-row justify-between items-center">
                             <p className="text-sm">Identifier: {farm.id}</p>
                             <div className="flex flex-row gap-x-4">
-                                <Button onPress={() => handleOpenModal(farm)}>Edit</Button>
+                                <Button color="primary" onPress={() => handleOpenModal(farm)}>Edit</Button>
                                 <Popover placement="top">
                                     <PopoverTrigger>
-                                        <Button>Delete</Button>
+                                        <Button color="danger">Delete</Button>
                                     </PopoverTrigger>
                                     <PopoverContent>
                                         <div className="px-1 py-2 flex flex-col gap-y-4">
                                             <div className="text-small font-bold text-center">Confirm delete?</div>
                                             <div className="flex flex-row gap-x-4 justify-center">
-                                                <Button onClick={() => handleDeleteFarm(farm.id.toString())}>Confirm</Button>
+                                                <Button color="danger" onClick={() => handleDeleteFarm(farm.id.toString())}>Confirm</Button>
                                             </div>
                                         </div>
                                     </PopoverContent>
@@ -175,7 +175,7 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1">Add new crop</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1">Editing farm</ModalHeader>
                             <ModalBody>
                                 <div className="flex flex-row gap-x-4">
                                     <div className="flex flex-col gap-y-4">
@@ -251,8 +251,8 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                                 </div>
                             </ModalBody>
                             <ModalFooter>
-                                <Button>Cancel</Button>
-                                <Button onClick={() => handleUpdateFarm()}>Confirm</Button>
+                                <Button color="danger" onClick={onClose}>Cancel</Button>
+                                <Button color="success" onClick={() => handleUpdateFarm()}>Confirm</Button>
                             </ModalFooter>
                         </>
                     )}
