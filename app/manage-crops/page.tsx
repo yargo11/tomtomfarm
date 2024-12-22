@@ -63,7 +63,7 @@ export default function ManageCrops() {
             <div className='max-w-lg w-full p-1 m-1 rounded-lg'>
                 <div className="flex flew-row justify-between items-center mb-4">
                     <Button onPress={onOpen}>Add new Crop</Button>
-                    <Link href='/'>Back</Link>
+                    <Link href='/' className="underline-offset-2 hover:underline transition-all duration-200">Back</Link>
                 </div>
                 <ul className="max-w-md bg-slate-800 p-4 rounded-md">
                     {farmContext?.cropsList.map(crop => {
@@ -88,7 +88,6 @@ export default function ManageCrops() {
                     })}
                 </ul>
             </div>
-            listCrops
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (
