@@ -1,16 +1,16 @@
 'use client';
 
 import Farms from "@/components/farms";
-import { addFarm, deleteFarm } from "@/functions/FarmFunctions";
-import { fetchCropTypes } from "@/services/cropsService";
-import { fetchFarmsFromAPI } from "@/services/farmsService";
-import type { CropsProps, FarmsProps } from "@/types";
+import { FarmContext } from "@/context/farmContext";
+import { addFarmToAPI, deleteFarmFromAPI } from "@/services/farmsService";
+import { validateEmail } from "@/utils";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, useDisclosure } from "@nextui-org/react";
+import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import type { FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
 
 const landUnitType = [
@@ -20,25 +20,21 @@ const landUnitType = [
 
 export default function ManageFarms() {
 
-    const [farms, setFarms] = useState<FarmsProps[]>([])
-    const [cropsList, setCropsList] = useState<CropsProps[]>([])
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-    const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps)
+    const [farm, setFarm] = useState<FarmsProps>({} as FarmsProps) //new farm
     const [landUnit, setLandUnit] = useState<string>("")
-
+    const [searchFilter, setSearchFilter] = useState<string>('')
+    const [filteredFarms, setFilteredFarms] = useState<FarmsProps[]>([])
     const [selectedCrops, setSelectedCrops] = useState<Set<string>>(new Set([]));
+    const [touchedEmail, setTouchedEmail] = useState<boolean>(false)
+    const [isEmailInvalid, setIsEmailInvalid] = useState<boolean>(false)
 
-    useEffect(() => {
-        fetchFarmsFromAPI()
-            .then(data => setFarms(data))
-            .catch(error => console.log(error));
+    const farmContext = useContext(FarmContext)
 
-        fetchCropTypes()
-            .then(data => setCropsList(data))
-            .catch(error => console.log(error));;
-    }, []);
+    const listFarms: string[] | undefined = farmContext?.farms.map(farm => farm.farmName)
+    const listEmails: string[] | undefined = farmContext?.farms.map(farm => farm.email)
 
-    //update cropsProduction objet when clicking a crop from list
+    // update cropsProduction objet when clicking a crop from list
     useEffect(() => {
         const newCropProductions = Array.from(selectedCrops).map((key, index) => ({
             id: Number.parseInt(key, 10),
@@ -49,100 +45,185 @@ export default function ManageFarms() {
         setFarm((prevFarm) => ({ ...prevFarm, cropProductions: newCropProductions }))
     }, [selectedCrops])
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (farmContext?.farms) {
+                const filtered = farmContext.farms.filter((farm) =>
+                    farm.farmName.toLowerCase().includes(searchFilter.toLowerCase())
+                )
+                setFilteredFarms(filtered)
+            }
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [searchFilter, farmContext])
+
+    // delay on email input
+    useEffect(() => {
+        if (!touchedEmail) return
+        const delay = setTimeout(() => {
+            if (listEmails?.includes(farm.email)) {
+                setIsEmailInvalid(true)
+            } else {
+                setIsEmailInvalid(validateEmail(farm.email))
+            }
+        }, 500)
+
+        return () => clearTimeout(delay)
+    }, [farm.email, touchedEmail, listEmails])
+
+
+
     const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setLandUnit(e.target.value);
         setFarm({ ...farm, landUnit: e.target.value })
     };
 
-    //ADD A NEW FARM
     function handleAddNewFarm() {
         const newFarm = {
             id: farm.id,
             farmName: farm.farmName,
             landArea: farm.landArea,
             landUnit: farm.landUnit,
+            email: farm.email,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             cropProductions: farm.cropProductions,
         };
 
-        addFarm(newFarm)
-            .then((updatedFarms) => { setFarms(updatedFarms) })
-            .catch((error) => console.error('Error: ', error))
+        addFarmToAPI(newFarm)
+            .then((updatedFarms) => {
+                farmContext?.setFarms(updatedFarms)
+                setIsEmailInvalid(false)
+                alert(`${newFarm.farmName} succefully added`);
+            })
+            .catch((error) => {
+                console.error('Error: ', error)
+                alert('Sommething went wrong')
+            })
 
         onClose()
     }
 
     function handleDeleteFarm(id: string) {
-        deleteFarm(id)
-            .then((updatedFarms) => { setFarms(updatedFarms) })
-            .catch((error) => console.error('Error: ', error))
+        deleteFarmFromAPI(id)
+            .then((updatedFarms: FarmsProps[]) => { farmContext?.setFarms(updatedFarms) })
+            .catch((error: Error) => console.error('Error: ', error))
+    }
+
+    function handleChangeEmail(email: string) {
+        setFarm({ ...farm, email: email })
+        setTouchedEmail(true)
+    }
+
+    function checkFarmForSubmit() {
+        if (!listFarms?.includes(farm.farmName) &&
+            !isEmailInvalid &&
+            farm.landArea > 0 &&
+            farm.landUnit !== '' &&
+            farm.cropProductions.length >= 1
+        ) {
+            return true
+        }
+        return false
     }
 
     return (
         <div className='min-h-screen p-2 flex flex-col items-center gap-y-4'>
             <h1 className='text-2xl'>Tomtom Crops</h1>
-            <div className='max-w-lg w-full p-1 m-1 rounded-lg bg'>
+            <div className='flex flex-col max-w-lg w-full rounded-lg gap-y-4'>
                 <div className="flex flew-row justify-between items-center">
                     <Button onPress={onOpen}>Add new Farm</Button>
                     <Link href='/'>Back</Link>
                 </div>
-                <Farms farms={farms} handleDeleteFarm={handleDeleteFarm} />
+                <Input value={searchFilter} onValueChange={setSearchFilter} placeholder="Filter you search" />
+
+                <Farms farms={filteredFarms} handleDeleteFarm={handleDeleteFarm} />
             </div>
 
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1">Add new crop</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1">Add new farm</ModalHeader>
                             <ModalBody>
-                                <Input
-                                    label="Farm Name"
-                                    type="text"
-                                    onChange={e => setFarm({ ...farm, farmName: e.target.value })}
-                                />
-                                <Input
-                                    label="LandArea"
-                                    type="number"
-                                    onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
-                                />
-                                <Select
-                                    className="w-full"
-                                    label="Land Unit"
-                                    placeholder="Select land unit"
-                                    selectedKeys={[landUnit]}
-                                    onChange={handleSelectionChange}
-                                >
-                                    {landUnitType.map((unit) => (
-                                        <SelectItem key={unit.key}>{unit.label}</SelectItem>
-                                    ))}
-                                </Select>
+                                <div className="flex flex-row gap-x-4">
+                                    <div className="flex flex-col gap-y-4">
+                                        <Input
+                                            isRequired
+                                            label=" Name"
+                                            type="text"
+                                            errorMessage="Name already exists"
+                                            isInvalid={listFarms?.includes(farm.farmName)}
+                                            onChange={e => setFarm({ ...farm, farmName: e.target.value })}
+                                            variant="bordered"
+                                        />
+                                        <Input
+                                            isRequired
+                                            label=" Email"
+                                            type="email"
+                                            errorMessage="Invalid email or email already exists"
+                                            isInvalid={isEmailInvalid}
+                                            onChange={(e) => handleChangeEmail(e.target.value)}
+                                            variant="bordered"
+                                        />
+                                        <Input
+                                            isRequired
+                                            label="LandArea"
+                                            type="number"
+                                            onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
+                                            variant="bordered"
+                                        />
+                                        <Select
+                                            isRequired
+                                            className="w-full"
+                                            label="Land Unit"
+                                            placeholder="Select land unit"
+                                            selectedKeys={[landUnit]}
+                                            onChange={handleSelectionChange}
+                                            variant="bordered"
+                                        >
+                                            {landUnitType.map((unit) => (
+                                                <SelectItem key={unit.key}>{unit.label}</SelectItem>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <h1 className={'text-lg'}>Select your crops</h1>
 
-                                <h1 className={'text-lg'}>Select your crops</h1>
-                                <Listbox
-                                    disallowEmptySelection
-                                    aria-label="Multiple selection example"
-                                    selectedKeys={selectedCrops}
-                                    selectionMode="multiple"
-                                    variant="flat"
-                                    //REVER ESSE SELECTION
-                                    onSelectionChange={(keys) => {
-                                        if (keys instanceof Set) {
-                                            setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
-                                        }
-                                    }}
-                                >
-                                    {cropsList.map(crops => {
-                                        return (
-                                            <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
-                                        )
-                                    })}
-                                </Listbox>
+                                        <Listbox
+                                            disallowEmptySelection
+                                            aria-label="Multiple selection example"
+                                            selectedKeys={selectedCrops}
+                                            selectionMode="multiple"
+                                            variant="flat"
+                                            onSelectionChange={(keys) => {
+                                                if (keys instanceof Set) {
+                                                    setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
+                                                }
+                                            }}
+                                        >
+                                            {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
+                                                return (
+                                                    <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
+                                                )
+                                            })) : <ListboxItem>No Crops Available</ListboxItem>}
+                                        </Listbox>
+                                    </div>
+                                </div>
+
+
 
                             </ModalBody>
                             <ModalFooter>
-                                <Button>Cancel</Button>
-                                <Button onClick={() => handleAddNewFarm()}>Confirm</Button>
+                                <Button color="danger" onClick={onClose}>Cancel</Button>
+                                <Button
+                                    onClick={() => handleAddNewFarm()}
+                                    color={!checkFarmForSubmit() ? 'default' : 'success'}
+                                    disabled={!checkFarmForSubmit()}
+                                >
+                                    Confirm
+                                </Button>
                             </ModalFooter>
                         </>
                     )}

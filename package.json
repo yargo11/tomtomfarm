@@ -21,6 +21,8 @@
 		"@nextui-org/switch": "2.2.3",
 		"@nextui-org/system": "2.4.3",
 		"@nextui-org/theme": "2.4.1",
+		"@nivo/core": "^0.88.0",
+		"@nivo/pie": "^0.88.0",
 		"@react-aria/ssr": "3.9.7",
 		"@react-aria/visually-hidden": "3.8.18",
 		"clsx": "2.1.1",

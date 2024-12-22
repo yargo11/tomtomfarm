@@ -21,5 +21,7 @@ export function formatarHora(dataString: string) {
     return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
 }
 
-
-export default formatarHora;
+export function validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return !emailRegex.test(email);
+};

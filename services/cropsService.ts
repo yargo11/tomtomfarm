@@ -1,8 +1,8 @@
-export async function fetchCropTypes() {
-  const baseUrl = "http://localhost:3000/crop-types";
+const CROP_URL = "http://localhost:3000/crop-types";
 
+export async function fetchCropTypesFromAPI() {
   try {
-    const response = await fetch(baseUrl);
+    const response = await fetch(CROP_URL);
     if (!response.ok) {
       throw new Error(`Error: status ${response.status}`);
     }
@@ -11,6 +11,49 @@ export async function fetchCropTypes() {
     return data;
   } catch (error) {
     console.error("Error fetching crops:", error);
+    throw error;
+  }
+}
+
+export async function addCropsToAPI(id: string, crop: string) {
+  const newCrop = {
+    id: id.toString(),
+    name: crop,
+  };
+
+  try {
+    const response = await fetch(CROP_URL, {
+      method: "POST",
+      headers: {
+        "Content-type": "applciation/json",
+      },
+      body: JSON.stringify(newCrop),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: status ${response.status}`);
+    }
+
+    return await fetchCropTypesFromAPI();
+  } catch (error) {
+    console.error("Error creating crop:", error);
+    throw error;
+  }
+}
+
+export async function deleteCropFromAPI(id: string) {
+  try {
+    const response = await fetch(`${CROP_URL}/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: status ${response.status}`);
+    }
+
+    return fetchCropTypesFromAPI();
+  } catch (error) {
+    console.error("Error deleting crop:", error);
     throw error;
   }
 }

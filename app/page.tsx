@@ -1,7 +1,5 @@
-import Farms from "@/components/farms";
-import { Button } from "@nextui-org/button";
+import PieCharts from "@/components/pieChart";
 import Link from "next/link";
-
 
 export default function Home() {
   return (
@@ -12,7 +10,7 @@ export default function Home() {
           <Link href='/manage-farms'>Manage Farms</Link>
           <Link href='/manage-crops'>Manage Crops</Link>
         </div>
-        <Farms />
+        <PieCharts />
       </div>
     </div>
   );
