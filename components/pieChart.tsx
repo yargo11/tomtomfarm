@@ -39,7 +39,7 @@ export default function PieCharts() {
     }));
 
     return (
-        <div style={{ height: '400px', width: '600px' }}>
+        <div style={{ height: '400px', maxWidth: '600px', width: '100%' }}>
             <ResponsivePie
                 data={data}
                 margin={{ top: 40, right: 80, bottom: 80, left: 80 }}

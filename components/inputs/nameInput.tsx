@@ -14,11 +14,10 @@ export default function NameInput({ listFarms, onChange, value }: NameInputProps
 
     return (
         <Input
-            isRequired
             label=" Name"
             type="text"
             errorMessage="Name already exists"
-            isInvalid={listFarms?.includes(value)}
+            isInvalid={value !== undefined && listFarms?.includes(value)}
             onChange={(e) => handleChange(e.target.value)}
             variant="bordered"
         />

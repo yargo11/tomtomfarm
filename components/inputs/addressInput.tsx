@@ -43,7 +43,6 @@ export default function AddressInput({ value, onChange }: AddressInputProps) {
     return (
         <>
             <Input
-                isRequired
                 className="w-full"
                 placeholder="St. Tomato 1239"
                 label="Address"
