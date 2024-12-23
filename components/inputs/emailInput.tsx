@@ -33,7 +33,6 @@ export default function EmailInput({ value, onChange, listEmails }: EmailInputPr
 
     return (
         <Input
-            isRequired
             label=" Email"
             type="email"
             errorMessage="Invalid email or email already exists"

@@ -13,6 +13,9 @@ import type { ChangeEvent } from "react";
 import AddressInput from "@/components/inputs/addressInput";
 import EmailInput from "@/components/inputs/emailInput";
 import NameInput from "@/components/inputs/nameInput";
+import { v4 as uuidv4 } from 'uuid';
+
+import { FaPlus } from "react-icons/fa";
 
 const landUnitType = [
     { key: "hectare", label: "Hectare" },
@@ -30,6 +33,7 @@ export default function ManageFarms() {
     const [isEmailInvalid, setIsEmailInvalid] = useState<boolean>(false)
 
     const farmContext = useContext(FarmContext)
+    const { v4: uuidv4 } = require('uuid');
 
     const listFarms: string[] | undefined = farmContext?.farms.map(farm => farm.farmName)
     const listEmails: string[] | undefined = farmContext?.farms.map(farm => farm.email)
@@ -49,7 +53,9 @@ export default function ManageFarms() {
         const timer = setTimeout(() => {
             if (farmContext?.farms) {
                 const filtered = farmContext.farms.filter((farm) =>
-                    farm.farmName.toLowerCase().includes(searchFilter.toLowerCase())
+                    farm.farmName
+                        ? farm.farmName.toLowerCase().includes(searchFilter.toLowerCase())
+                        : String(farm.id).toLowerCase().includes(searchFilter.toLowerCase())
                 )
                 setFilteredFarms(filtered)
             }
@@ -73,12 +79,12 @@ export default function ManageFarms() {
 
     function handleAddNewFarm() {
         const newFarm = {
-            id: farm.id,
+            id: uuidv4(),
             farmName: farm.farmName,
             landArea: farm.landArea,
             landUnit: farm.landUnit,
-            email: farm.email,
-            address: farm.address,
+            email: farm.email ? farm.email : '',
+            address: farm.address ? farm.address : '',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             cropProductions: farm.cropProductions,
@@ -88,7 +94,7 @@ export default function ManageFarms() {
             .then((updatedFarms) => {
                 farmContext?.setFarms(updatedFarms)
                 setIsEmailInvalid(false)
-                alert(`${newFarm.farmName} succefully added`);
+                alert(`${newFarm.farmName ? newFarm.farmName : newFarm.id} succefully added`);
             })
             .catch((error) => {
                 console.error('Error: ', error)
@@ -107,8 +113,6 @@ export default function ManageFarms() {
             .catch((error: Error) => console.error('Error: ', error))
     }
 
-
-
     function checkFarmForSubmit() {
         if (!listFarms?.includes(farm.farmName) &&
             !isEmailInvalid &&
@@ -123,24 +127,25 @@ export default function ManageFarms() {
 
     return (
         <div className='min-h-screen p-2 flex flex-col items-center gap-y-4'>
-            <h1 className='text-2xl'>Tomtom Crops</h1>
-            <div className='flex flex-col max-w-lg w-full rounded-lg gap-y-4'>
+            <h1 className='text-2xl text-gray-900 font-mono'>Farms list</h1>
+            <div className='flex flex-col max-w-3xl w-full rounded-lg gap-y-4'>
                 <div className="flex flew-row justify-between items-center">
-                    <Button onPress={handleOpenModal}>Add new Farm</Button>
-                    <Link href='/'>Back</Link>
+                    <Button onPress={handleOpenModal} color="success" className="text-slate-50"><FaPlus /> Farm</Button>
+                    <Link href='/' className='hover:underline'>Back</Link>
                 </div>
-                <Input value={searchFilter} onValueChange={setSearchFilter} placeholder="Filter you search" />
-
+                <div className="flex flex-row gap-x-2">
+                    <Input value={searchFilter} onValueChange={setSearchFilter} placeholder="Filter you search" variant="bordered" />
+                </div>
                 <Farms farms={filteredFarms} handleDeleteFarm={handleDeleteFarm} />
             </div>
 
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} className="my-auto">
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">Add new farm</ModalHeader>
                             <ModalBody>
-                                <div className="flex flex-col gap-y-4">
+                                <div className="flex flex-col gap-y-3">
 
                                     <NameInput
                                         value={farm.farmName}
@@ -180,7 +185,6 @@ export default function ManageFarms() {
                                         ))}
                                     </Select>
 
-                                    <h1 className={'text-lg'}>Select your crops</h1>
                                     <Select
                                         className="w-full"
                                         label="Select crops"
@@ -210,6 +214,7 @@ export default function ManageFarms() {
                                     onClick={() => handleAddNewFarm()}
                                     color={!checkFarmForSubmit() ? 'default' : 'success'}
                                     disabled={!checkFarmForSubmit()}
+                                    className="text-slate-50"
                                 >
                                     Confirm
                                 </Button>
