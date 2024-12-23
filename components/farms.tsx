@@ -18,10 +18,9 @@ interface FarmsPageProps {
 
 const pageSize = [
     { key: "1", label: "1" },
-    { key: "2", label: "2" },
-    { key: "3", label: "3" },
-    { key: "4", label: "4" },
-    { key: "5", label: "5" }
+    { key: "5", label: "5" },
+    { key: "10", label: "10" },
+    { key: "20", label: "20" }
 ];
 
 const landUnitType = [
@@ -105,8 +104,9 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                 <Pagination
                     initialPage={currentPage}
                     total={Math.ceil(farms.length / Number(resultsPerPage))}
-                    className="flex-1"
+                    className="flex flex-1"
                     onChange={setCurrentPage}
+                    isCompact
                 />
                 <Select
                     className="flex flex-1"

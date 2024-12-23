@@ -12,7 +12,6 @@ import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import type { FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
-import SelectCrops from "@/components/selectCrops";
 
 const landUnitType = [
     { key: "hectare", label: "Hectare" },
@@ -190,29 +189,27 @@ export default function ManageFarms() {
                                     </Select>
 
                                     <h1 className={'text-lg'}>Select your crops</h1>
-
-                                    <SelectCrops />
-                                    {/* <Listbox
-                                            disallowEmptySelection
-                                            aria-label="Multiple selection example"
-                                            selectedKeys={selectedCrops}
-                                            selectionMode="multiple"
-                                            variant="flat"
-                                            onSelectionChange={(keys) => {
-                                                if (keys instanceof Set) {
-                                                    setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
-                                                }
-                                            }}
-                                        >
-                                            {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
-                                                return (
-                                                    <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
-                                                )
-                                            })) : <ListboxItem>No Crops Available</ListboxItem>}
-                                        </Listbox> */}
+                                    <Select
+                                        className="w-full"
+                                        label="Select crops"
+                                        placeholder="Corn, beans, rice..."
+                                        selectionMode="multiple"
+                                        variant="bordered"
+                                        selectedKeys={selectedCrops}
+                                        onSelectionChange={(keys) => {
+                                            if (keys instanceof Set) {
+                                                setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
+                                            }
+                                        }}
+                                    >
+                                        {farmContext?.cropsList?.length ? (farmContext.cropsList.map(crops => {
+                                            return (
+                                                <SelectItem key={crops.id}>{crops.name}</SelectItem>
+                                            )
+                                        })) : <SelectItem>No Crops Available</SelectItem>
+                                        }
+                                    </Select>
                                 </div>
-
-
 
                             </ModalBody>
                             <ModalFooter>
