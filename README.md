@@ -46,16 +46,6 @@ npm install
 yarn install
 ```
 
-### Rodar o Projeto
-
-Para iniciar o ambiente de desenvolvimento local, execute o seguinte comando:
-
-```bash
-npm run dev
-# ou
-yarn dev
-```
-
 ### Instalar e Rodar o JSON-Server
 
 O projeto utiliza o json-server para simular uma API local. Para rodá-lo, execute:
@@ -73,6 +63,16 @@ json-server --watch db.json --port 3000
 ```
 
 Isso criará uma API local acessível em http://localhost:3000.
+
+### Rodar o Projeto
+
+Para iniciar o ambiente de desenvolvimento local, execute o seguinte comando:
+
+```bash
+npm run dev
+# ou
+yarn dev
+```
 
 O projeto estará acessível em http://localhost:3001 no seu navegador.
 
