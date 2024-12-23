@@ -65,10 +65,9 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
     const handleUpdateFarm = () => {
         updateFarmToAPI({ ...farmToEdit, updatedAt: new Date().toISOString() })
-            .then(data => {
+            .then(() => {
                 alert(`Farm ${farmToEdit.farmName ? farmToEdit.farmName : farmToEdit.id} updated!`)
-                fetchFarmsFromAPI()
-                console.log(data)
+                window.location.reload()
             })
             .catch(error => console.log(error))
             .finally(() => onClose());
