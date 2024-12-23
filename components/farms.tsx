@@ -7,7 +7,7 @@ import { Checkbox, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pag
 import { useContext, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
-import { updateFarmToAPI } from "@/services/farmsService";
+import { fetchFarmsFromAPI, updateFarmToAPI } from "@/services/farmsService";
 import { FarmContext } from "@/context/farmContext";
 import { formatarHora } from "@/utils";
 
@@ -66,7 +66,11 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
 
     const handleUpdateFarm = () => {
         updateFarmToAPI({ ...farmToEdit, updatedAt: new Date().toISOString() })
-            .then(data => console.log(data))
+            .then(data => {
+                alert(`Farm ${farmToEdit.farmName} updated!`)
+                fetchFarmsFromAPI()
+                console.log(data)
+            })
             .catch(error => console.log(error))
             .finally(() => onClose());
     }
