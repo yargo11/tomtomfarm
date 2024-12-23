@@ -127,6 +127,7 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                             <div className="flex flex-col items-start">
                                 <p>Farm name: {farm.farmName}</p>
                                 <p>Farm email: {farm.email}</p>
+                                <p>Farm address: {farm.address}</p>
                             </div>
                             <div>
                                 <p>Farm size: {farm.landArea} {farm.landUnit}</p>
@@ -238,7 +239,6 @@ export default function Farms({ farms, handleDeleteFarm }: FarmsPageProps) {
                                             defaultSelectedKeys={farmToEdit.cropProductions.map(crop => crop.cropTypeId.toString())}
                                             selectionMode="multiple"
                                             variant="flat"
-                                            //REVER ESSE SELECTION
                                             onSelectionChange={(keys) => {
                                                 if (keys instanceof Set) {
                                                     setSelectedCrops(new Set(Array.from(keys).map((key) => String(key))));
