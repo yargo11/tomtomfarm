@@ -155,6 +155,8 @@ export default function ManageFarms() {
 
                                     <EmailInput
                                         value={farm.email}
+                                        isEmailInvalid={isEmailInvalid}
+                                        setIsEmailInvalid={setIsEmailInvalid}
                                         onChange={(value) => setFarm({ ...farm, email: value })}
                                         listEmails={listEmails || []}
                                     />

@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 interface EmailInputProps {
     value: string;
     onChange: (value: string) => void;
-    listEmails: string[]
+    listEmails: string[],
+    isEmailInvalid: boolean,
+    setIsEmailInvalid: (value:boolean) => void
 }
 
-export default function EmailInput({ value, onChange, listEmails }: EmailInputProps) {
+export default function EmailInput({ value, onChange, listEmails, isEmailInvalid, setIsEmailInvalid }: EmailInputProps) {
 
-    const [isEmailInvalid, setIsEmailInvalid] = useState<boolean>(false)
+    // const [isEmailInvalid, setIsEmailInvalid] = useState<boolean>(false)
     const [touchedEmail, setTouchedEmail] = useState<boolean>(false)
 
     useEffect(() => {
@@ -24,7 +26,7 @@ export default function EmailInput({ value, onChange, listEmails }: EmailInputPr
         }, 500)
 
         return () => clearTimeout(delay)
-    }, [value, touchedEmail, listEmails])
+    }, [value, touchedEmail, listEmails, setIsEmailInvalid])
 
     function handleChangeEmail(value: string) {
         onChange(value)
