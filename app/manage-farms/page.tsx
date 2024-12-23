@@ -12,6 +12,7 @@ import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import type { FarmsProps } from "@/types";
 import type { ChangeEvent } from "react";
+import SelectCrops from "@/components/selectCrops";
 
 const landUnitType = [
     { key: "hectare", label: "Hectare" },
@@ -148,51 +149,50 @@ export default function ManageFarms() {
                         <>
                             <ModalHeader className="flex flex-col gap-1">Add new farm</ModalHeader>
                             <ModalBody>
-                                <div className="flex flex-row gap-x-4">
-                                    <div className="flex flex-col gap-y-4">
-                                        <Input
-                                            isRequired
-                                            label=" Name"
-                                            type="text"
-                                            errorMessage="Name already exists"
-                                            isInvalid={listFarms?.includes(farm.farmName)}
-                                            onChange={e => setFarm({ ...farm, farmName: e.target.value })}
-                                            variant="bordered"
-                                        />
-                                        <Input
-                                            isRequired
-                                            label=" Email"
-                                            type="email"
-                                            errorMessage="Invalid email or email already exists"
-                                            isInvalid={isEmailInvalid}
-                                            onChange={(e) => handleChangeEmail(e.target.value)}
-                                            variant="bordered"
-                                        />
-                                        <Input
-                                            isRequired
-                                            label="LandArea"
-                                            type="number"
-                                            onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
-                                            variant="bordered"
-                                        />
-                                        <Select
-                                            isRequired
-                                            className="w-full"
-                                            label="Land Unit"
-                                            placeholder="Select land unit"
-                                            selectedKeys={[landUnit]}
-                                            onChange={handleSelectionChange}
-                                            variant="bordered"
-                                        >
-                                            {landUnitType.map((unit) => (
-                                                <SelectItem key={unit.key}>{unit.label}</SelectItem>
-                                            ))}
-                                        </Select>
-                                    </div>
-                                    <div>
-                                        <h1 className={'text-lg'}>Select your crops</h1>
+                                <div className="flex flex-col gap-y-4">
+                                    <Input
+                                        isRequired
+                                        label=" Name"
+                                        type="text"
+                                        errorMessage="Name already exists"
+                                        isInvalid={listFarms?.includes(farm.farmName)}
+                                        onChange={e => setFarm({ ...farm, farmName: e.target.value })}
+                                        variant="bordered"
+                                    />
+                                    <Input
+                                        isRequired
+                                        label=" Email"
+                                        type="email"
+                                        errorMessage="Invalid email or email already exists"
+                                        isInvalid={isEmailInvalid}
+                                        onChange={(e) => handleChangeEmail(e.target.value)}
+                                        variant="bordered"
+                                    />
+                                    <Input
+                                        isRequired
+                                        label="LandArea"
+                                        type="number"
+                                        onChange={e => setFarm({ ...farm, landArea: Number(e.target.value) })}
+                                        variant="bordered"
+                                    />
+                                    <Select
+                                        isRequired
+                                        className="w-full"
+                                        label="Land Unit"
+                                        placeholder="Select land unit"
+                                        selectedKeys={[landUnit]}
+                                        onChange={handleSelectionChange}
+                                        variant="bordered"
+                                    >
+                                        {landUnitType.map((unit) => (
+                                            <SelectItem key={unit.key}>{unit.label}</SelectItem>
+                                        ))}
+                                    </Select>
 
-                                        <Listbox
+                                    <h1 className={'text-lg'}>Select your crops</h1>
+
+                                    <SelectCrops />
+                                    {/* <Listbox
                                             disallowEmptySelection
                                             aria-label="Multiple selection example"
                                             selectedKeys={selectedCrops}
@@ -209,8 +209,7 @@ export default function ManageFarms() {
                                                     <ListboxItem key={crops.id}>{crops.name}</ListboxItem>
                                                 )
                                             })) : <ListboxItem>No Crops Available</ListboxItem>}
-                                        </Listbox>
-                                    </div>
+                                        </Listbox> */}
                                 </div>
 
 
